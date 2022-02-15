@@ -1,0 +1,162 @@
+{
+	"visualizations": {
+		"viz_chart_1": {
+			"type": "viz.bar",
+			"options": {
+				"drilldown": "none",
+				"refresh.display": "progressbar"
+			},
+			"dataSources": {
+				"primary": "ds_search_1"
+			},
+			"title": "Top Spinnaker Deployment Accounts"
+		},
+		"viz_table_1": {
+			"type": "splunk.table",
+			"options": {
+				"drilldown": "none",
+				"refresh.display": "progressbar"
+			},
+			"dataSources": {
+				"primary": "ds_search_2"
+			},
+			"title": "Manual Judgements - Approvals for Production Deployments"
+		},
+		"viz_chart_2": {
+			"type": "viz.area",
+			"options": {
+				"drilldown": "none"
+			},
+			"dataSources": {
+				"primary": "ds_search_3"
+			},
+			"title": "Gate API sessions by Authenticated Users"
+		},
+		"viz_table_2": {
+			"type": "splunk.table",
+			"options": {
+				"drilldown": "none"
+			},
+			"dataSources": {
+				"primary": "ds_search_4"
+			},
+			"title": "Deployments to Namespace Environment - by Deployment Account"
+		}
+	},
+	"dataSources": {
+		"ds_search_1": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=Spinnaker \"event.details.type\"=\"orca:pipeline:starting\" | timechart count by event.content.execution.stages{}.context.account limit=10 usenull=f",
+				"queryParameters": {
+					"earliest": "$field1.earliest$",
+					"latest": "$field1.latest$"
+				}
+			}
+		},
+		"ds_search_2": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=Spinnaker | stats count by event.content.execution.authentication.user, event.details.application | sort -count | stats list(event.details.application) as \"Application\", list(count) as count, sum(count) as total by event.content.execution.authentication.user | sort -total | rename event.content.execution.authentication.user as \"Authentication Propagated\"",
+				"queryParameters": {
+					"earliest": "$field1.earliest$",
+					"latest": "$field1.latest$"
+				}
+			}
+		},
+		"ds_search_3": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=Spinnaker \"event.details.source\"=gate event.content.user=!anonymous | timechart count by event.content.user",
+				"queryParameters": {
+					"earliest": "$field1.earliest$",
+					"latest": "$field1.latest$"
+				}
+			}
+		},
+		"ds_search_4": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=Spinnaker | stats count by event.content.execution.stages{}.context.account, event.content.context.kato.tasks{}.resultObjects{}.manifests{}.metadata.namespace | sort -count | stats list(event.content.context.kato.tasks{}.resultObjects{}.manifests{}.metadata.namespace) as \"Deployment Namespaces\", list(count) as count, sum(count) as total by event.content.execution.stages{}.context.account | sort -total | rename event.content.execution.stages{}.context.account as \"Spinnaker Deployment Accounts\"",
+				"queryParameters": {
+					"earliest": "$field1.earliest$",
+					"latest": "$field1.latest$"
+				}
+			}
+		}
+	},
+	"defaults": {
+		"dataSources": {
+			"ds.search": {
+				"options": {
+					"queryParameters": {}
+				}
+			}
+		}
+	},
+	"inputs": {
+		"input_1": {
+			"type": "input.timerange",
+			"title": "Select Time",
+			"options": {
+				"token": "field1",
+				"defaultValue": "-30d@d,now"
+			}
+		}
+	},
+	"layout": {
+		"type": "absolute",
+		"options": {
+			"submitButton": false,
+			"display": "auto-scale",
+			"height": 500
+		},
+		"structure": [
+			{
+				"item": "viz_chart_1",
+				"type": "block",
+				"position": {
+					"x": 0,
+					"y": 0,
+					"w": 600,
+					"h": 250
+				}
+			},
+			{
+				"item": "viz_table_1",
+				"type": "block",
+				"position": {
+					"x": 600,
+					"y": 0,
+					"w": 600,
+					"h": 250
+				}
+			},
+			{
+				"item": "viz_chart_2",
+				"type": "block",
+				"position": {
+					"x": 0,
+					"y": 250,
+					"w": 600,
+					"h": 250
+				}
+			},
+			{
+				"item": "viz_table_2",
+				"type": "block",
+				"position": {
+					"x": 600,
+					"y": 250,
+					"w": 600,
+					"h": 250
+				}
+			}
+		],
+		"globalInputs": [
+			"input_1"
+		]
+	},
+	"description": "",
+	"title": "Compliance Center"
+}

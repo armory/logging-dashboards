@@ -1,0 +1,133 @@
+{
+	"visualizations": {
+		"viz_chart_1": {
+			"type": "viz.area",
+			"options": {
+				"chart.stackMode": "stacked",
+				"drilldown": "all"
+			},
+			"dataSources": {
+				"primary": "ds_search_1"
+			},
+			"title": "Gate Sessions with Errors - Spinnaker API"
+		},
+		"viz_chart_2": {
+			"type": "viz.column",
+			"options": {
+				"chart.stackMode": "stacked",
+				"refresh.display": "progressbar"
+			},
+			"dataSources": {
+				"primary": "ds_search_2"
+			},
+			"title": "Orca Functions Failure Count"
+		},
+		"viz_table_1": {
+			"type": "splunk.table",
+			"options": {
+				"drilldown": "row",
+				"rowNumbers": true
+			},
+			"dataSources": {
+				"primary": "ds_search_3"
+			},
+			"title": "Top Errors from Spinnaker Orca Service (System Scheduler)"
+		}
+	},
+	"dataSources": {
+		"ds_search_1": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=Spinnaker clouddriver error| timechart count by event.content.context.exception.details.error limit=10 usenull=0",
+				"queryParameters": {
+					"earliest": "$field1.earliest$",
+					"latest": "$field1.latest$"
+				}
+			}
+		},
+		"ds_search_2": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=Spinnaker \"event.details.type\"=\"orca:*:failed\" | stats count by event.details.type | sort -count | rename event.details.type as \"Orca Functions\"",
+				"queryParameters": {
+					"earliest": "$field1.earliest$",
+					"latest": "$field1.latest$"
+				}
+			}
+		},
+		"ds_search_3": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=Spinnaker \"event.details.type\"=\"orca:*:failed\"| top limit=20 \"event.content.context.exception.details.errors{}\" | rename event.content.context.exception.details.errors{} as \"Spinnaker Platform Errors\"",
+				"queryParameters": {
+					"earliest": "$field1.earliest$",
+					"latest": "$field1.latest$"
+				}
+			}
+		}
+	},
+	"defaults": {
+		"dataSources": {
+			"ds.search": {
+				"options": {
+					"queryParameters": {}
+				}
+			}
+		}
+	},
+	"inputs": {
+		"input_1": {
+			"type": "input.timerange",
+			"title": "Select Time",
+			"options": {
+				"token": "field1",
+				"defaultValue": "-7d@h,now"
+			}
+		}
+	},
+	"layout": {
+		"type": "absolute",
+		"options": {
+			"submitButton": false,
+			"display": "auto-scale",
+			"height": 500
+		},
+		"structure": [
+			{
+				"item": "viz_chart_1",
+				"type": "block",
+				"position": {
+					"x": 0,
+					"y": 0,
+					"w": 600,
+					"h": 250
+				}
+			},
+			{
+				"item": "viz_chart_2",
+				"type": "block",
+				"position": {
+					"x": 600,
+					"y": 0,
+					"w": 600,
+					"h": 250
+				}
+			},
+			{
+				"item": "viz_table_1",
+				"type": "block",
+				"position": {
+					"x": 0,
+					"y": 250,
+					"w": 1200,
+					"h": 250
+				}
+			}
+		],
+		"globalInputs": [
+			"input_1"
+		]
+	},
+	"description": "",
+	"title": "Spinnaker Platform"
+}

@@ -1,0 +1,194 @@
+{
+	"visualizations": {
+		"viz_single_1": {
+			"type": "splunk.singlevalue",
+			"options": {
+				"drilldown": "all",
+				"refresh.display": "progressbar",
+				"trendInterval": "-24h",
+				"underLabel": "Compared to a day before",
+				"shouldUseThousandSeparators": true
+			},
+			"dataSources": {
+				"primary": "ds_search_1"
+			},
+			"title": "Deployment Frequency (DF)"
+		},
+		"viz_chart_1": {
+			"type": "viz.pie",
+			"options": {
+				"drilldown": "none"
+			},
+			"dataSources": {
+				"primary": "ds_search_2"
+			},
+			"title": "Top Deployments by Application"
+		},
+		"viz_table_1": {
+			"type": "splunk.table",
+			"options": {
+				"drilldown": "none",
+				"refresh.display": "progressbar"
+			},
+			"dataSources": {
+				"primary": "ds_search_3"
+			},
+			"title": "Production Approvals - Manual Judgements"
+		},
+		"viz_chart_2": {
+			"type": "viz.column",
+			"options": {
+				"axisTitleX.text": "Mouse over chart (click to drilldown)",
+				"drilldown": "all"
+			},
+			"dataSources": {
+				"primary": "ds_search_4"
+			},
+			"title": "Software Deployments by Application"
+		},
+		"viz_Cgz4gtYq": {
+			"type": "viz.pie",
+			"dataSources": {
+				"primary": "ds_1xOoneRR"
+			},
+			"title": "Failed Deployments"
+		}
+	},
+	"dataSources": {
+		"ds_search_1": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=Spinnaker \"event.details.type\"=\"orca:task:complete\" | fields event.details.type | timechart count",
+				"queryParameters": {
+					"earliest": "$field1.earliest$",
+					"latest": "$field1.latest$"
+				}
+			}
+		},
+		"ds_search_2": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=Spinnaker \"event.details.type\"=\"orca:pipeline:complete\"| top limit=20 \"event.details.application\"",
+				"queryParameters": {
+					"earliest": "$field1.earliest$",
+					"latest": "$field1.latest$"
+				}
+			}
+		},
+		"ds_search_3": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=Spinnaker \"event.content.execution.stages{}.name\"=\"Manual Judgment\" | stats count by event.content.execution.trigger.user | rename event.content.execution.trigger.user as \"Approval Users\"",
+				"queryParameters": {
+					"earliest": "$field1.earliest$",
+					"latest": "$field1.latest$"
+				}
+			}
+		},
+		"ds_search_4": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=Spinnaker \"event.details.type\"=\"orca:pipeline:complete\"| timechart count by event.details.application limit=10",
+				"queryParameters": {
+					"earliest": "$field1.earliest$",
+					"latest": "$field1.latest$"
+				}
+			}
+		},
+		"ds_1xOoneRR": {
+			"type": "ds.search",
+			"options": {
+				"queryParameters": {
+					"earliest": "$field1.earliest$",
+					"latest": "$field1.latest$"
+				},
+				"query": "index=Spinnaker \"event.details.type\"=\"orca:pipeline:failed\"| top limit=20 \"event.details.application\""
+			},
+			"name": "Failed Deployments"
+		}
+	},
+	"defaults": {
+		"dataSources": {
+			"ds.search": {
+				"options": {
+					"queryParameters": {}
+				}
+			}
+		}
+	},
+	"inputs": {
+		"input_1": {
+			"type": "input.timerange",
+			"title": "Select Time",
+			"options": {
+				"token": "field1",
+				"defaultValue": "-30d@d,now"
+			}
+		}
+	},
+	"layout": {
+		"type": "absolute",
+		"options": {
+			"submitButton": false,
+			"display": "auto-scale",
+			"height": 500
+		},
+		"structure": [
+			{
+				"item": "viz_single_1",
+				"type": "block",
+				"position": {
+					"x": 0,
+					"y": 0,
+					"w": 400,
+					"h": 250
+				}
+			},
+			{
+				"item": "viz_chart_1",
+				"type": "block",
+				"position": {
+					"x": 400,
+					"y": 0,
+					"w": 400,
+					"h": 250
+				}
+			},
+			{
+				"item": "viz_table_1",
+				"type": "block",
+				"position": {
+					"x": 800,
+					"y": 0,
+					"w": 400,
+					"h": 250
+				}
+			},
+			{
+				"item": "viz_chart_2",
+				"type": "block",
+				"position": {
+					"x": 0,
+					"y": 250,
+					"w": 610,
+					"h": 250
+				}
+			},
+			{
+				"item": "viz_Cgz4gtYq",
+				"type": "block",
+				"position": {
+					"x": 610,
+					"y": 250,
+					"w": 590,
+					"h": 250
+				}
+			}
+		],
+		"globalInputs": [
+			"input_1"
+		]
+	},
+	"description": "",
+	"title": "Software Deployments"
+}
