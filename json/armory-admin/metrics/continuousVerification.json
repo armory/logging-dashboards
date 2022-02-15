@@ -1,0 +1,217 @@
+{
+	"visualizations": {
+		"viz_chart_1": {
+			"type": "viz.area",
+			"options": {
+				"axisTitleX.text": "Time Series",
+				"drilldown": "all",
+				"legend.placement": "bottom",
+				"refresh.display": "progressbar"
+			},
+			"dataSources": {
+				"primary": "ds_search_3"
+			},
+			"title": "Log Verification - App Logs with \"Error\" in the event"
+		},
+		"viz_chart_2": {
+			"type": "viz.column",
+			"options": {
+				"axisTitleX.text": "Time Series",
+				"drilldown": "all",
+				"refresh.display": "progressbar"
+			},
+			"dataSources": {
+				"primary": "ds_search_4"
+			},
+			"title": "Log Verification - App Logs with \"Exception\" in the event"
+		},
+		"viz_chart_4": {
+			"type": "viz.area",
+			"options": {
+				"drilldown": "none"
+			},
+			"dataSources": {
+				"primary": "ds_search_7"
+			},
+			"title": "Automated Rollback by Application (MTTR) - Splunk Webhooks to Spinnaker"
+		}
+	},
+	"dataSources": {
+		"ds_search_1": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=* | fields index | dedup index | table index",
+				"queryParameters": {
+					"earliest": "0"
+				}
+			}
+		},
+		"ds_search_2": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=$field2$ | fields sourcetype | dedup sourcetype | table sourcetype",
+				"queryParameters": {
+					"earliest": "0"
+				}
+			}
+		},
+		"ds_search_3": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=$field2$ sourcetype=$field3$ | fields index, sourcetype, source | timechart count as events by source",
+				"queryParameters": {
+					"earliest": "$field1.earliest$",
+					"latest": "$field1.latest$"
+				}
+			}
+		},
+		"ds_search_4": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=$field2$ sourcetype=$field3$ exception | timechart count as events by source",
+				"queryParameters": {
+					"earliest": "$field1.earliest$",
+					"latest": "$field1.latest$"
+				}
+			}
+		},
+		"ds_search_5": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=Spinnaker status=5* OR status=4* | fields status, index, sourcetype | timechart count by status",
+				"queryParameters": {
+					"earliest": "$field1.earliest$",
+					"latest": "$field1.latest$"
+				}
+			}
+		},
+		"ds_search_6": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=_internal sourcetype=scheduler search_type=scheduled alert_actions!=\"\" app=\"TA-Spinnaker\" | table _time, savedsearch_name, app, alert_actions, run_time",
+				"queryParameters": {
+					"earliest": "$field1.earliest$",
+					"latest": "$field1.latest$"
+				}
+			}
+		},
+		"ds_search_7": {
+			"type": "ds.search",
+			"options": {
+				"query": "index=Spinnaker \"event.content.execution.trigger.payload.search_name\"=Rollback | timechart count by event.details.application",
+				"queryParameters": {
+					"earliest": "$field1.earliest$",
+					"latest": "$field1.latest$"
+				}
+			}
+		}
+	},
+	"defaults": {
+		"dataSources": {
+			"ds.search": {
+				"options": {
+					"queryParameters": {}
+				}
+			}
+		}
+	},
+	"inputs": {
+		"input_1": {
+			"type": "input.timerange",
+			"title": "Select your time range",
+			"options": {
+				"token": "field1",
+				"defaultValue": "-30d@d,now"
+			}
+		},
+		"input_2": {
+			"type": "input.dropdown",
+			"title": "Find Application Index",
+			"options": {
+				"token": "field2",
+				"defaultValue": "*",
+				"items": [
+					{
+						"value": "*",
+						"label": "All"
+					}
+				]
+			},
+			"encoding": {
+				"value": "primary.index",
+				"label": "primary.index"
+			},
+			"dataSources": {
+				"primary": "ds_search_1"
+			}
+		},
+		"input_3": {
+			"type": "input.dropdown",
+			"title": "Find Application SourceType",
+			"options": {
+				"token": "field3",
+				"defaultValue": "*",
+				"items": [
+					{
+						"value": "*",
+						"label": "All"
+					}
+				]
+			},
+			"encoding": {
+				"value": "primary.sourcetype",
+				"label": "primary.sourcetype"
+			},
+			"dataSources": {
+				"primary": "ds_search_2"
+			}
+		}
+	},
+	"layout": {
+		"type": "absolute",
+		"options": {
+			"submitButton": false,
+			"display": "auto-scale",
+			"height": 500
+		},
+		"structure": [
+			{
+				"item": "viz_chart_1",
+				"type": "block",
+				"position": {
+					"x": 0,
+					"y": 0,
+					"w": 650,
+					"h": 250
+				}
+			},
+			{
+				"item": "viz_chart_2",
+				"type": "block",
+				"position": {
+					"x": 650,
+					"y": 0,
+					"w": 550,
+					"h": 250
+				}
+			},
+			{
+				"item": "viz_chart_4",
+				"type": "block",
+				"position": {
+					"x": 0,
+					"y": 250,
+					"w": 1200,
+					"h": 250
+				}
+			}
+		],
+		"globalInputs": [
+			"input_1",
+			"input_2",
+			"input_3"
+		]
+	},
+	"description": "",
+	"title": "Continuous Verification"
+}
